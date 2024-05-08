@@ -32,6 +32,7 @@
                                     <th>ID</th>
                                     <th>Nombre</th>
                                     <th>Correo</th>
+                                    <th>Telefono</th>
                                     <th>Tema</th>
                                     <th>Mensaje</th>
                                 </tr>
@@ -42,6 +43,7 @@
                                         <td>{{ $item->id }}</td>
                                         <td>{{ $item->nombre }}</td>
                                         <td>{{ $item->correo }}</td>
+                                        <td>{{ $item->telefono }}</td>
                                         <td>{{ $item->tema }}</td>
                                         <td>{{ $item->mensaje }}</td>
                                     </tr>

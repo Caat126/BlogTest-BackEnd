@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Api;
 
 use Carbon\Carbon;
 use App\Models\Posts;
+use Twilio\Rest\Client;
 use App\Models\Contactos;
 use App\Models\Categorias;
 use App\Models\Comentarios;
@@ -168,6 +169,7 @@ class PostsController extends Controller
             'correo' => 'required|email',
             'tema' => 'required|string|min:5|max:200',
             'mensaje' => 'required|string|min:10|max:500',
+            'telefono' => 'required|numeric|digits_between:6,8',
         ]);
 
         $contacto = new Contactos();
@@ -175,8 +177,27 @@ class PostsController extends Controller
         $contacto->correo = $request->correo;
         $contacto->tema = $request->tema;
         $contacto->mensaje = $request->mensaje;
+        $contacto->telefono = $request->telefono;
 
         if ($contacto->save()) {
+
+            // verificacion si es un celular o telefono fijo
+            if (strlen($contacto->telefono) == 8){
+                $twilioId = env('TWILIO_SID');
+                $twilioToken = env('TWILIO_TOKEN');
+                $twilioDesde = env('TWILIO_FROM');
+
+                $twilioCliente = new Client($twilioId, $twilioToken);
+                $numeroCliente = '+591'.$contacto->telefono;
+                $mensajeCliente = "Hola! gracias por contactarte con nosotros. Te respondere a la brevedad posible.";
+
+                $twilioCliente->messages->create(
+                    $numeroCliente, [
+                        'from' => $twilioDesde,
+                        'body' => $mensajeCliente
+                    ]);
+            }
+
             return response ()->json([
                 'mensaje' => 'Registro creado con exito',
                 'datos' => $contacto
@@ -186,5 +207,27 @@ class PostsController extends Controller
                 'error' => 'No se pudo registrar el contacto'
             ]);
         }
+    }
+
+    //para enviar el sms
+    public function enviarSMS($numero){
+        $sid = env('TWILIO_SID');
+        $token = env('TWILIO_TOKEN');
+        $desde = env('TWILIO_FROM');
+        $a = '+591'.$numero;
+        $mensaje = "Hola! gracias por contactarte con nosotros. Te respondere a la brevedad posible.";
+
+        $clienteTwilio = new Client($sid, $token);
+        $mensajeEnviado = $clienteTwilio->messages->create(
+            $a, [
+                'from' => $desde,
+                'body' => $mensaje
+            ]
+        );
+
+        return response ()->json([
+            'mensaje' => 'SMS enviado',
+            'datos' => $mensajeEnviado
+        ]);
     }
 }

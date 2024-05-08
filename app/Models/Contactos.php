@@ -16,5 +16,6 @@ class Contactos extends Model
         'correo',
         'tema',
         'mensaje',
+        'telefono',
     ];
 }
